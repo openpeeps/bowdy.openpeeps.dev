@@ -1,0 +1,31 @@
+---
+title: llms.txt
+description: "Bowdy overview for LLMs: what Bowdy is, how BASS works, CLI essentials, and where to find syntax, CLI and library docs."
+---
+
+# Bowdy — llms.txt
+
+> Bowdy (code name `bro`) is a fast CSS preprocessor with a built-in language, written in Nim. BASS files (`.bass`) compile to standard CSS via a stack-based VM with opt-in JIT. Plain CSS is valid BASS.
+
+- Version: 0.3.0 (Nim >= 2.0.0)
+- License: LGPL-3.0-or-later
+- Repo: https://github.com/openpeeps/bowdy
+- Install: `nimble install bowdy` / `clue install bowdy --build`
+- Entry: `bowdy c style.bass -o style.css` (minified by default, `--pretty` for formatted)
+- Embed: `import bowdy` -> `compileStylesheet(code)` / `compileStylesheetFile(path)` returning `BroCompileResult(ok, css, warnings, error)`
+
+## Docs in this site
+
+- `/syntax` — complete BASS language reference. Selectors (class/id/element/universal/pseudo/functional/attributes/combinators), indent vs `{...}` blocks, `// /* /** /*!` comments, properties/values/`!important`, numbers/scientific/units/strings/`true/false/null`/hex + named-color normalization, `var`/`const` `$vars` with `$`-omission + `*` export + type annotations, `${...}` interpolation, `&` nesting, at-rules (`@media @supports @layer @font-face @keyframes @import @charset @namespace`), `mixin` + `@call` with typed/named args, `fn/func/function` with overloading, `if/elif/else for range/arrays while case/of break/continue/return/echo`, `import` relative + `pkg/` modules, `var(--x[, fallback])` typed custom properties, opaque vs typed CSS functions, lenient vs `--strict` type system, error format with snippet+caret. =
+- `/cli` — full command-line reference including the exact `--help` output. `bowdy c` flags (`-o -w --sourceMap --pretty --strict --warnings --data`), stdout vs file output, `--sourceMap` requires `-o`, watch-mode + JIT behavior, cache at `~/.bowdy/cache`, package resolution under `~/.tim/packages`, `bowdy ast` JSON dump, embed API, benchmarks (`benchmarks/bench.sh`, suites A/B/C).
+- `/libraries` — stdlib reference for the four auto-loaded modules (`system colors arrays cssTypes`). Typed constructors (`parseLength parseAngle parseTime parseResolution parseFlex parseHex* parseColor*`), color ops (`lighten darken saturate desaturate spin mix mixCMYK toHex* distance almostEqual`), typed CSS families (transform/filter/gradient/shape/easing/color/image + `var()`), system ops (`range type echo cssStr cssJoin len JSON OS`), array ops (`add delete insert join contains find dedup`) + object literals for data-driven loops. Notes that `strings objects times` exist in source but are NOT auto-loaded.
+
+## Key facts for code generation
+
+- Output minified by default; named colors emit lowercase hex (`red` -> `#ff0000`); `#` never starts a comment.
+- `$` prefix required at use sites; `var accent = red` registers `$accent`; only `*`-marked vars are importable.
+- Indent mixin bodies require `=` (`mixin m(...) =`); brace bodies do not. Unknown mixins warn; missing/too many args error.
+- `range(lo, hi)` inclusive; constant-range `${...}` selector loops unroll at parse time.
+- Default compile lenient (VM types only); `--strict` adds property-syntax checks, invalid-color errors, `var(--x)` kind checks; undeclared `var(--x)` only warns.
+- `calc url env min/max/clamp attr counter repeat/minmax` stay opaque verbatim; `rgb()/hsl()`-family static calls keep source spelling, dynamic forms evaluate canonically.
+- Custom-property registry global, order-independent, last-wins; scoping ignored; `env()` untouched.
